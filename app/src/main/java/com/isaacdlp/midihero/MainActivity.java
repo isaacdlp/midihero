@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String[] instruments = {
             "Drums",
-            "Guitar",
+            "Guitar 5-Fret",
+            "Guitar 6-Fret",
             "Piano"
     };
     private int instrument = 0;
@@ -256,7 +257,7 @@ public class MainActivity extends AppCompatActivity {
                                                             }
                                                             break;
                                                         case 0x2C:      // Hi-Hat Pedal (NEW)
-                                                            evt = 110;      // Open (n)
+                                                            evt = 110;      // 2x Kick (n)
                                                             if (navMode) {
                                                                 evt = 109;  // Start (m)
                                                             }
@@ -286,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
                                                             evt = 98;      // Whammy (b)
                                                             break;
                                                         case 0x2E:      // Str 1 Fret 6
-                                                            evt = 110;      // Open (n)
+                                                            evt = 110;      // 2x Kick (n)
                                                             break;
                                                     }
 
@@ -365,6 +366,109 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 break;
                                             case 3:
+                                                if ((cmd & 0xF0) == 0x90) {
+                                                    char evt = 0;
+                                                    switch (dat_a) {
+                                                        case 0x28:
+                                                        case 0x29:
+                                                        case 0x2A:
+                                                        case 0x2B:
+                                                        case 0x2C:
+                                                        case 0x2E:
+                                                        case 0x2F:
+                                                        case 0x30:
+                                                            evt = 122;      // Strum up (z)
+                                                            break;
+                                                        case 0x40:
+                                                        case 0x41:
+                                                        case 0x42:
+                                                        case 0x43:
+                                                        case 0x44:
+                                                        case 0x45:
+                                                        case 0x46:
+                                                        case 0x47:
+                                                            evt = 120;      // Strum Down (x)
+                                                            break;
+                                                    }
+
+                                                    if (evt != 0) {
+                                                        res = input.doPress(evt);
+                                                        if (res) {
+                                                            textView.setText("Sent key " + evt);
+                                                        }
+                                                    }
+                                                } else if ((cmd & 0xF0) == 0xB0) {
+                                                    int evt_a = -1;
+                                                    int evt_b = 0;
+                                                    if (dat_a == 0x13 && dat_b == 0x7F) {
+                                                        char evt = 104;     // Select & Star Power (h)
+                                                        res = input.doPress(evt);
+                                                        if (res) {
+                                                            textView.setText("Sent key " + evt);
+                                                        }
+                                                    } else if (dat_a == 0x14 && dat_b == 0x7F) {
+                                                        char evt = 109;     // Start (m)
+                                                        res = input.doPress(evt);
+                                                        if (res) {
+                                                            textView.setText("Sent key " + evt);
+                                                        }
+                                                    } else {
+                                                        switch (dat_a) {
+                                                            case (0x6E):     // Black 1 (a)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_A;
+                                                                if (dat_b == 0x28) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                            case (0x6D):    // Black 2 (s)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_S;
+                                                                if (dat_b == 0x2D) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                            case (0x6C):    // Black 3 (j)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_J;
+                                                                if (dat_b == 0x32) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                            case (0x6B):    // White 1 (k)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_K;
+                                                                if (dat_b == 0x37) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                            case (0x6A):    // White 2 (l)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_L;
+                                                                if (dat_b == 0x3B) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                            case (0x69):    // White 3 (n)
+                                                                evt_a = KeyEvent.ACTION_DOWN;
+                                                                evt_b = KeyEvent.KEYCODE_N;
+                                                                if (dat_b == 0x40) {
+                                                                    evt_a = KeyEvent.ACTION_UP;
+                                                                }
+                                                                break;
+                                                        }
+
+                                                    }
+
+                                                    if (evt_a >= 0) {
+                                                        res = input.doEvent(new KeyEvent(evt_a, evt_b));
+                                                        if (res) {
+                                                            textView.setText("Sent event " + evt_a + " " + evt_b);
+                                                        }
+                                                    }
+                                                }
+                                                break;
+                                            case 4:
                                                 int evt_a = -1;
                                                 if ((cmd & 0xF0) == 0x80) {
                                                     evt_a = KeyEvent.ACTION_UP;
@@ -373,50 +477,40 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 if (evt_a >= 0) {
                                                     int evt_b = 0;
-                                                    switch (dat_a) {
-                                                        case 0x3D:      // Up (x)
-                                                        case 0x31:
+                                                    int mod = dat_a / 12;
+                                                    switch (mod) {
+                                                        case 1:      // Up (x)
                                                             evt_b = KeyEvent.KEYCODE_Z;
                                                             break;
-                                                        case 0x3F:      // Down (z)
-                                                        case 0x33:
+                                                        case 3:      // Down (z)
                                                             evt_b = KeyEvent.KEYCODE_X;
                                                             break;
-                                                        case 0x3C:      // Green (a)
-                                                        case 0x30:
+                                                        case 0:      // Green (a)
                                                             evt_b = KeyEvent.KEYCODE_A;
                                                             break;
-                                                        case 0x3E:      // Red (s)
-                                                        case 0x32:
+                                                        case 2:      // Red (s)
                                                             evt_b = KeyEvent.KEYCODE_S;
                                                             break;
-                                                        case 0x40:      // Yellow (j)
-                                                        case 0x34:
+                                                        case 4:      // Yellow (j)
                                                             evt_b = KeyEvent.KEYCODE_J;
                                                             break;
-                                                        case 0x41:      // Blue (k)
-                                                        case 0x35:
+                                                        case 5:      // Blue (k)
                                                             evt_b = KeyEvent.KEYCODE_K;
                                                             break;
-                                                        case 0x43:      // Orange (l)
-                                                        case 0x37:
+                                                        case 7:      // Orange (l)
                                                             evt_b = KeyEvent.KEYCODE_L;
                                                             break;
-                                                        case 0x42:      // Select (h)
-                                                        case 0x36:
+                                                        case 6:      // Select (h)
                                                             evt_b = KeyEvent.KEYCODE_H;
                                                             break;
-                                                        case 0x44:      // Start (m)
-                                                        case 0x38:
+                                                        case 8:      // Start (m)
                                                             evt_b = KeyEvent.KEYCODE_M;
                                                             break;
-                                                        case 0x45:      // Whammy (b)
-                                                        case 0x39:
-                                                            evt_b = KeyEvent.KEYCODE_B;
-                                                            break;
-                                                        case 0x46:      // Open (n)
-                                                        case 0x3A:
+                                                        case 9:      // White 3 (b)
                                                             evt_b = KeyEvent.KEYCODE_N;
+                                                            break;
+                                                        case 10:      // Whammy (b)
+                                                            evt_b = KeyEvent.KEYCODE_B;
                                                             break;
                                                     }
 
