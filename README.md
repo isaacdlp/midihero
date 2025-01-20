@@ -6,6 +6,7 @@ MIDI Hero is a simple MIDI to Key Press wrapper to play Clone Hero (and any othe
 
 Tested and customized to use with:
 
+* [Alesis Nitro Mesh](https://www.alesisdrums.com/electronic-drum-kits/nitro-mesh-kit/)
 * [Theodots Hyperdrum](https://theodots.com/pages/hyperdrum)
 * [Jamstik 7](https://www.youtube.com/watch?v=Jmg6M8WCQK0)
 * [iRig 37 Keys](https://www.youtube.com/watch?v=CRFppPvgv48)

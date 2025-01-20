@@ -2,9 +2,7 @@ package com.isaacdlp.midihero;
 
 import android.annotation.SuppressLint;
 
-import android.inputmethodservice.Keyboard;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -23,32 +21,29 @@ import android.media.midi.MidiReceiver;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
     public static MyInputMethodService input = null;
 
-    private String[] instruments = {
+    private final String[] instruments = {
             "Drums",
+            "Pro Drums",
             "Guitar 5-Fret",
             "Guitar 6-Fret",
             "Piano"
     };
     private int instrument = 0;
-
     private boolean navMode = false;
 
     private Spinner spinOutput;
-    private Spinner spinInstr;
-    private Button btnRefresh;
-    private Button btnStart;
-    private Button btnStop;
     private TextView textView;
 
     private MidiManager midiManager;
     private MidiOutputPort midiOutputPort;
     private MidiDeviceInfo selectedOutputDevice;
-    private ArrayList<MidiDeviceInfo> midiDevices = new ArrayList<>();
+    private final ArrayList<MidiDeviceInfo> midiDevices = new ArrayList<>();
 
 
     @SuppressLint("MissingInflatedId")
@@ -61,22 +56,21 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize UI elements
         spinOutput = findViewById(R.id.spinnerOutput);
-        spinInstr = findViewById(R.id.spinnerInstr);
-        btnRefresh = findViewById(R.id.btnRefresh);
-        btnStart = findViewById(R.id.btnStart);
-        btnStop = findViewById(R.id.btnStop);
+        Spinner spinInstr = findViewById(R.id.spinnerInstr);
+        Button btnRefresh = findViewById(R.id.btnRefresh);
+        Button btnStart = findViewById(R.id.btnStart);
+        Button btnStop = findViewById(R.id.btnStop);
         textView = findViewById(R.id.textView);
 
         ArrayAdapter<String> adapterOUT = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapterOUT.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         adapterOUT.add("Select instrument");
-        for (int i = 0; i < instruments.length; i++) {
-            adapterOUT.add(instruments[i]);
-        }
+        for (String s : instruments) adapterOUT.add(s);
         spinInstr.setAdapter(adapterOUT);
 
         // Set listeners for Spinner selections
         spinOutput.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position > 0) {
@@ -88,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 textView.setText("No input selected");
@@ -95,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         spinInstr.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 instrument = position;
@@ -103,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 textView.setText("No instrument selected");
@@ -111,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set listeners for Buttons
         btnRefresh.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
                 refreshDeviceLists();
@@ -135,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
         refreshDeviceLists();
     }
 
+    @SuppressLint("SetTextI18n")
     private void refreshDeviceLists() {
         if (midiManager == null) {
             textView.setText("Cannot find the MIDI Manager");
@@ -147,9 +146,7 @@ public class MainActivity extends AppCompatActivity {
 
         midiDevices.clear();
         MidiDeviceInfo[] devices = midiManager.getDevices();
-        for (MidiDeviceInfo device : devices) {
-            midiDevices.add(device);
-        }
+        midiDevices.addAll(Arrays.asList(devices));
 
         ArrayAdapter<String> adapterIN = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item);
         adapterIN.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -163,16 +160,18 @@ public class MainActivity extends AppCompatActivity {
         spinOutput.setAdapter(adapterIN);
     }
 
+    @SuppressLint("SetTextI18n")
     private void stopMidi() {
         if (midiOutputPort != null) {
             try {
                 midiOutputPort.close();
                 midiOutputPort = null;
-            } catch (IOException e) { }
+            } catch (IOException ignored) { }
         }
         textView.setText("Stopped");
     }
 
+    @SuppressLint("SetTextI18n")
     private void startMidi() {
         stopMidi();
 
@@ -198,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
                 midiOutputPort = midiDevice.openOutputPort(0);
                 if (midiOutputPort != null) {
                     MidiReceiver receiver = new MidiReceiver() {
+                        @SuppressLint("SetTextI18n")
                         @Override
                         public void onSend(byte[] data, int offset, int count, long timestamp) {
                             try {
@@ -207,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                                 }
 
                                 if (data != null) {
-                                    boolean res = false;
+                                    boolean res;
                                     int pos = 0;
                                     while (pos <= (count + 3) && data.length >= (offset + count)) {
                                         byte cmd = data[offset + pos];
@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
                                                             }
                                                             break;
                                                         case 0x33:      // Ride (NEW)
-                                                            evt = 112;      // Green Cymbal - (p)
+                                                            evt = 112;      // Green Cymbal (p)
                                                             if (navMode) {
                                                                 evt = 120;   // Strum Down (x)
                                                             }
@@ -274,6 +274,55 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 break;
                                             case 2:
+                                                if ((cmd & 0xF0) == 0xB0) {
+                                                    if (dat_a == 0x04) {
+                                                        cmd = data[offset + 3];
+                                                        dat_a = data[offset + 4];
+                                                    }
+                                                }
+
+                                                if ((cmd & 0xF0) == 0x90) {
+                                                    char evt = 0;
+                                                    switch (dat_a) {
+                                                        case 0x2E:      // Hi-Hat Open (NEW)
+                                                            evt = 105;      // Yellow Cymbal (i)
+                                                            break;
+                                                        case 0x2B:      // Floor tom
+                                                            evt = 97;      // Green (a)
+                                                            break;
+                                                        case 0x26:      // Snare
+                                                            evt = 115;      // Red (s)
+                                                            break;
+                                                        case 0x30:      // Hi Tom
+                                                            evt = 106;      // Yellow (j)
+                                                            break;
+                                                        case 0x24:      // Bass Drum
+                                                            evt = 108;      // Orange (l)
+                                                            break;
+                                                        case 0x31:      // Cymbal (NEW)
+                                                            evt = 111;      // Blue Cymbal (o)
+                                                            break;
+                                                        case 0x2D:      // Mid Tom (NEW)
+                                                            evt = 107;      // Blue (k)
+                                                            break;
+                                                        case 0x33:      // Ride (NEW)
+                                                            evt = 112;      // Green Cymbal (p)
+                                                            break;
+                                                        case 0x2C:      // Hi-Hat Pedal (NEW)
+                                                            evt = 110;      // 2x Kick (n)
+                                                            break;
+                                                    }
+
+                                                    if (evt != 0) {
+                                                        res = input.doPress(evt);
+                                                        if (res) {
+                                                            textView.setText("Sent key " + evt);
+                                                        }
+                                                    }
+                                                    break;
+                                                }
+                                                return;     // Important! Alesis Nitro hack
+                                            case 3:
                                                 if ((cmd & 0xF0) == 0x90) {
                                                     char evt = 0;
                                                     switch (dat_a) {
@@ -365,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
                                                     }
                                                 }
                                                 break;
-                                            case 3:
+                                            case 4:
                                                 if ((cmd & 0xF0) == 0x90) {
                                                     char evt = 0;
                                                     switch (dat_a) {
@@ -468,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
                                                     }
                                                 }
                                                 break;
-                                            case 4:
+                                            case 5:
                                                 int evt_a = -1;
                                                 if ((cmd & 0xF0) == 0x80) {
                                                     evt_a = KeyEvent.ACTION_UP;
@@ -552,7 +601,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 midiOutputPort.close();
                 midiOutputPort = null;
-            } catch (IOException e) { }
+            } catch (IOException ignored) { }
         }
     }
 }
