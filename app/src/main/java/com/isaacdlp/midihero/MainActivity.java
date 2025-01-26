@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
                                                             textView.setText("Navigation Mode " + (navMode ? "On" : "Off"));
                                                             break;
                                                         case 0x29:      // Floor tom
+                                                        case 0x2B:
                                                             evt = 97;      // Green (a)
                                                             break;
                                                         case 0x26:      // Snare
@@ -285,9 +286,11 @@ public class MainActivity extends AppCompatActivity {
                                                     char evt = 0;
                                                     switch (dat_a) {
                                                         case 0x2E:      // Hi-Hat Open (NEW)
+                                                        case 0x2A:      // Hi Hat Closed
                                                             evt = 105;      // Yellow Cymbal (i)
                                                             break;
                                                         case 0x2B:      // Floor tom
+                                                        case 0x29:
                                                             evt = 97;      // Green (a)
                                                             break;
                                                         case 0x26:      // Snare
@@ -526,39 +529,49 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                                 if (evt_a >= 0) {
                                                     int evt_b = 0;
-                                                    int mod = dat_a / 12;
-                                                    switch (mod) {
-                                                        case 1:      // Up (x)
-                                                            evt_b = KeyEvent.KEYCODE_Z;
-                                                            break;
-                                                        case 3:      // Down (z)
-                                                            evt_b = KeyEvent.KEYCODE_X;
-                                                            break;
-                                                        case 0:      // Green (a)
+                                                    switch (dat_a) {
+                                                        case 0x3C:      // Green (a)
+                                                        case 0x30:
                                                             evt_b = KeyEvent.KEYCODE_A;
                                                             break;
-                                                        case 2:      // Red (s)
+                                                        case 0x3D:      // Up (x)
+                                                        case 0x31:
+                                                            evt_b = KeyEvent.KEYCODE_Z;
+                                                            break;
+                                                        case 0x3E:      // Red (s)
+                                                        case 0x32:
                                                             evt_b = KeyEvent.KEYCODE_S;
                                                             break;
-                                                        case 4:      // Yellow (j)
+                                                        case 0x3F:      // Down (z)
+                                                        case 0x33:
+                                                            evt_b = KeyEvent.KEYCODE_X;
+                                                            break;
+                                                        case 0x40:      // Yellow (j)
+                                                        case 0x34:
                                                             evt_b = KeyEvent.KEYCODE_J;
                                                             break;
-                                                        case 5:      // Blue (k)
+                                                        case 0x41:      // Blue (k)
+                                                        case 0x35:
                                                             evt_b = KeyEvent.KEYCODE_K;
                                                             break;
-                                                        case 7:      // Orange (l)
-                                                            evt_b = KeyEvent.KEYCODE_L;
-                                                            break;
-                                                        case 6:      // Select (h)
+                                                        case 0x42:      // Select (h)
+                                                        case 0x36:
                                                             evt_b = KeyEvent.KEYCODE_H;
                                                             break;
-                                                        case 8:      // Start (m)
+                                                        case 0x43:      // Orange (l)
+                                                        case 0x37:
+                                                            evt_b = KeyEvent.KEYCODE_L;
+                                                            break;
+                                                        case 0x44:      // Start (m)
+                                                        case 0x38:
                                                             evt_b = KeyEvent.KEYCODE_M;
                                                             break;
-                                                        case 9:      // White 3 (b)
+                                                        case 0x45:      // White 3 (b)
+                                                        case 0x39:
                                                             evt_b = KeyEvent.KEYCODE_N;
                                                             break;
-                                                        case 10:      // Whammy (b)
+                                                        case 0x46:      // Whammy (b)
+                                                        case 0x3A:
                                                             evt_b = KeyEvent.KEYCODE_B;
                                                             break;
                                                     }
